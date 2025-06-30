@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预制菜营养保卫战</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f5f9fc;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+        #game-container {
+            width: 900px;
+            max-width: 100%;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+        h1 {
+            color: #2c7873;
+            text-align: center;
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        .game-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .food-section, .result-section {
+            flex: 1;
+            min-width: 250px;
+            padding: 15px;
+            background-color: #f0f7f7;
+            border-radius: 10px;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.05);
+        }
+        .process-section {
+            flex: 2;
+            min-width: 300px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            align-content: flex-start;
+        }
+        .section-title {
+            color: #2c7873;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            text-align: center;
+            border-bottom: 2px solid #e0f0f0;
+            padding-bottom: 8px;
+        }
+        .food-display {
+            width: 180px;
+            height: 140px;
+            margin: 0 auto 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 2px solid #d0e8e8;
+            transition: all 0.3s;
+        }
+        .food-display img {
+            max-width: 90%;
+            max-height: 90%;
+            transition: all 0.3s;
+        }
+        .process-btn {
+            width: 140px;
+            height: 90px;
+            background: linear-gradient(135deg, #f8f8f8, #e8f4f4);
+            border: 2px solid #d0e8e8;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .process-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(44, 120, 115, 0.1);
+            border-color: #2c7873;
+            background: linear-gradient(135deg, #f0f8f8, #e0f0f0);
+        }
+        .process-btn:active {
+            transform: translateY(-2px);
+        }
+        .process-btn img {
+            width: 36px;
+            height: 36px;
+            margin-bottom: 5px;
+            transition: all 0.3s;
+        }
+        .process-btn:hover img {
+            transform: scale(1.1);
+        }
+        .process-name {
+            font-weight: bold;
+            color: #2c7873;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+        .process-effect {
+            font-size: 12px;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .nutrient-bar {
+            margin: 12px 0;
+        }
+        .nutrient-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        .nutrient-name {
+            color: #2c7873;
+            font-weight: bold;
+        }
+        .nutrient-value {
+            font-weight: bold;
+        }
+        .bar-container {
+            height: 16px;
+            background-color: #e0f0f0;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+            position: relative;
+        }
+        .bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                            rgba(255,255,255,0.3) 0%, 
+                            rgba(255,255,255,0) 50%, 
+                            rgba(0,0,0,0.05) 100%);
+            border-radius: 8px;
+        }
+        .result-content {
+            text-align: center;
+            margin-top: 15px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .result-text {
+            background-color: #e8f4f4;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .result-grade {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c7873;
+            margin: 10px 0;
+        }
+        .reset-btn {
+            display: block;
+            margin: 25px auto 0;
+            padding: 10px 25px;
+            background: linear-gradient(135deg, #2c7873, #3ba99c);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 3px 10px rgba(44, 120, 115, 0.3);
+        }
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(44, 120, 115, 0.4);
+            background: linear-gradient(135deg, #3ba99c, #2c7873);
+        }
+        .animation-area {
+            height: 150px;
+            width: 100%;
+            margin: 15px 0;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            background-color: #f0f7f7;
+            border: 2px dashed #d0e8e8;
+        }
+        .blood-drop {
+            position: absolute;
+            width: 12px;
+            height: 18px;
+            background: linear-gradient(180deg, #ff6b6b, #e74c3c);
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            opacity: 0.9;
+            z-index: 10;
+            filter: drop-shadow(0 2px 3px rgba(231, 76, 60, 0.3));
+        }
+        .tip-bubble {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 12px 15px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.15);
+            z-index: 100;
+            max-width: 220px;
+            font-size: 13px;
+            line-height: 1.5;
+            display: none;
+            border: 1px solid #d0e8e8;
+            color: #333;
+            transform: translateY(10px);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        .tip-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: white transparent transparent;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+        }
+        .food-selector {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .food-selector select {
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 2px solid #d0e8e8;
+            background-color: white;
+            font-size: 14px;
+            color: #2c7873;
+            font-weight: bold;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .food-selector select:hover {
+            border-color: #2c7873;
+        }
+        .process-lock {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255,255,255,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #2c7873;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        .process-btn.active {
+            transform: scale(0.95);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+        .process-btn.active .process-lock {
+            opacity: 1;
+        }
+        @media (max-width: 768px) {
+            .game-area {
+                flex-direction: column;
+            }
+            .process-section {
+                order: 3;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>🍳 预制菜营养保卫战 🥦</h1>
+        <div class="subtitle">点击加工步骤，观察营养成分变化，学习如何保留更多营养！</div>
+        
+        <div class="food-selector">
+            <select id="food-type" class="food-type">
+                <option value="vegetable">🥕 新鲜蔬菜</option>
+                <option value="meat">🥩 新鲜肉类</option>
+                <option value="fish">🐟 新鲜鱼类</option>
+                <option value="combo">🍱 混合食材</option>
+            </select>
+        </div>
+        
+        <div class="game-area">
+            <div class="food-section">
+                <h3 class="section-title">🥗 新鲜食材</h3>
+                <div class="food-display">
+                    <img src="https://img.icons8.com/color/96/000000/carrot.png" alt="新鲜蔬菜" id="ingredient-img">
+                </div>
+                
+                <div class="nutrient-bar">
+                    <div class="nutrient-label">
+                        <span class="nutrient-name">🍊 维生素C</span>
+                        <span class="nutrient-value" id="vitamin-c-value">100%</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill" id="vitamin-c-bar" style="width: 100%; background-color: #ff7675;"></div>
+                    </div>
+                </div>
+                
+                <div class="nutrient-bar">
+                    <div class="nutrient-label">
+                        <span class="nutrient-name">🥚 蛋白质</span>
+                        <span class="nutrient-value" id="protein-value">100%</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill" id="protein-bar" style="width: 100%; background-color: #fdcb6e;"></div>
+                    </div>
+                </div>
+                
+                <div class="nutrient-bar">
+                    <div class="nutrient-label">
+                        <span class="nutrient-name">🌾 维生素B</span>
+                        <span class="nutrient-value" id="vitamin-b-value">100%</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill" id="vitamin-b-bar" style="width: 100%; background-color: #55efc4;"></div>
+                    </div>
+                </div>
+                
+                <div class="nutrient-bar">
+                    <div class="nutrient-label">
+                        <span class="nutrient-name">⚡ 矿物质</span>
+                        <span class="nutrient-value" id="mineral-value">100%</span>
+                    </div>
+                    <div class="bar-container">
+                        <div class="bar-fill" id="mineral-bar" style="width: 100%; background-color: #74b9ff;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="process-section">
+                <h3 class="section-title" style="width: 100%;">🔪 加工步骤</h3>
+                
+                <div class="process-btn" id="cut-btn" data-process="cut">
+                    <img src="https://img.icons8.com/ios-filled/50/000000/knife.png" alt="切割">
+                    <div class="process-name">切割处理</div>
+                    <div class="process-effect">维生素C -10%</div>
+                    <div class="process-lock">🔒</div>
+                </div>
+                
+                <div class="process-btn" id="cook-btn" data-process="cook">
+                    <img src="https://img.icons8.com/ios-filled/50/000000/cooking-pot.png" alt="烹饪">
+                    <div class="process-name">高温烹饪</div>
+                    <div class="process-effect">蛋白质 -15%</div>
+                    <div class="process-lock">🔒</div>
+                </div>
+                
+                <div class="process-btn" id="freeze-btn" data-process="freeze">
+                    <img src="https://img.icons8.com/ios-filled/50/000000/snowflake.png" alt="冷冻">
+                    <div class="process-name">冷冻处理</div>
+                    <div class="process-effect">维生素B -8%</div>
+                    <div class="process-lock">🔒</div>
+                </div>
+                
+                <div class="process-btn" id="heat-btn" data-process="heat">
+                    <img src="https://img.icons8.com/ios-filled/50/000000/microwave.png" alt="加热">
+                    <div class="process-name">加热食用</div>
+                    <div class="process-effect">总营养 -20%</div>
+                    <div class="process-lock">🔒</div>
+                </div>
+                
+                <div class="animation-area" id="animation-area"></div>
+            </div>
+            
+            <div class="result-section">
+                <h3 class="section-title">🍽️ 加工结果</h3>
+                <div class="food-display">
+                    <img src="https://img.icons8.com/color/96/000000/vegetarian-food.png" alt="加工食品" id="result-img">
+                </div>
+                
+                <div class="result-content">
+                    <div class="result-text" id="result-text">
+                        请选择加工步骤，观察营养成分变化
+                    </div>
+                    <div class="result-grade" id="result-grade"></div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="reset-btn" id="reset-btn">🔄 重新开始</button>
+        
+        <div class="tip-bubble" id="tip-bubble"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 游戏状态管理
+            const gameState = {
+                nutrients: {
+                    vitaminC: 100,
+                    protein: 100,
+                    vitaminB: 100,
+                    mineral: 100
+                },
+                currentFood: 'vegetable',
+                isProcessing: false,
+                processesCompleted: 0
+            };
+            
+            // 食材数据
+            const foodData = {
+                vegetable: {
+                    name: "新鲜蔬菜",
+                    icon: "https://img.icons8.com/color/96/000000/carrot.png",
+                    resultIcon: "https://img.icons8.com/color/96/000000/vegetarian-food.png",
+                    baseNutrients: {
+                        vitaminC: 120,
+                        protein: 30,
+                        vitaminB: 60,
+                        mineral: 80
+                    },
+                    maxNutrients: {
+                        vitaminC: 120,
+                        protein: 30,
+                        vitaminB: 60,
+                        mineral: 80
+                    }
+                },
+                meat: {
+                    name: "新鲜肉类",
+                    icon: "https://img.icons8.com/color/96/000000/steak-rare.png",
+                    resultIcon: "https://img.icons8.com/color/96/000000/steak-well-done.png",
+                    baseNutrients: {
+                        vitaminC: 20,
+                        protein: 150,
+                        vitaminB: 100,
+                        mineral: 70
+                    },
+                    maxNutrients: {
+                        vitaminC: 20,
+                        protein: 150,
+                        vitaminB: 100,
+                        mineral: 70
+                    }
+                },
+                fish: {
+                    name: "新鲜鱼类",
+                    icon: "https://img.icons8.com/color/96/000000/fish.png",
+                    resultIcon: "https://img.icons8.com/color/96/000000/fish-food.png",
+                    baseNutrients: {
+                        vitaminC: 40,
+                        protein: 120,
+                        vitaminB: 90,
+                        mineral: 100
+                    },
+                    maxNutrients: {
+                        vitaminC: 40,
+                        protein: 120,
+                        vitaminB: 90,
+                        mineral: 100
+                    }
+                },
+                combo: {
+                    name: "混合食材",
+                    icon: "https://img.icons8.com/color/96/000000/meal.png",
+                    resultIcon: "https://img.icons8.com/color/96/000000/meal.png",
+                    baseNutrients: {
+                        vitaminC: 80,
+                        protein: 100,
+                        vitaminB: 80,
+                        mineral: 90
+                    },
+                    maxNutrients: {
+                        vitaminC: 80,
+                        protein: 100,
+                        vitaminB: 80,
+                        mineral: 90
+                    }
+                }
+            };
+            
+            // 加工步骤数据
+            const processData = {
+                cut: {
+                    name: "切割处理",
+                    effects: { vitaminC: -10, vitaminB: -5 },
+                    tip: "🔪 切割会增加食材与空气接触面积，加速维生素C和B的氧化流失。建议现切现用，减少暴露时间。"
+                },
+                cook: {
+                    name: "高温烹饪",
+                    effects: { protein: -15, vitaminC: -20, vitaminB: -10 },
+                    tip: "🔥 高温会破坏蛋白质结构，并使水溶性维生素(如维生素C和B)大量流失。建议采用蒸、煮等温和烹饪方式。"
+                },
+                freeze: {
+                    name: "冷冻处理",
+                    effects: { vitaminC: -8, vitaminB: -5 },
+                    tip: "❄️ 冷冻会导致细胞破裂，解冻时营养随水分流失。快速冷冻和避免反复解冻可以减少营养损失。"
+                },
+                heat: {
+                    name: "加热食用",
+                    effects: { protein: -10, vitaminC: -15, vitaminB: -8, mineral: -5 },
+                    tip: "🍲 二次加热会进一步破坏营养成分。预制菜最好一次性加热食用完毕，避免多次加热。"
+                }
+            };
+            
+            // DOM元素
+            const ingredientImg = document.getElementById('ingredient-img');
+            const resultImg = document.getElementById('result-img');
+            const vitaminCValue = document.getElementById('vitamin-c-value');
+            const proteinValue = document.getElementById('protein-value');
+            const vitaminBValue = document.getElementById('vitamin-b-value');
+            const mineralValue = document.getElementById('mineral-value');
+            const vitaminCBar = document.getElementById('vitamin-c-bar');
+            const proteinBar = document.getElementById('protein-bar');
+            const vitaminBBar = document.getElementById('vitamin-b-bar');
+            const mineralBar = document.getElementById('mineral-bar');
+            const resultText = document.getElementById('result-text');
+            const resultGrade = document.getElementById('result-grade');
+            const foodTypeSelect = document.getElementById('food-type');
+            const resetBtn = document.getElementById('reset-btn');
+            const processBtns = document.querySelectorAll('.process-btn');
+            const animationArea = document.getElementById('animation-area');
+            const tipBubble = document.getElementById('tip-bubble');
+            
+            // 更新营养显示
+            function updateNutrientDisplay() {
+                const food = foodData[gameState.currentFood];
+                
+                // 更新数值显示
+                vitaminCValue.textContent = Math.round(gameState.nutrients.vitaminC) + '%';
+                proteinValue.textContent = Math.round(gameState.nutrients.protein) + '%';
+                vitaminBValue.textContent = Math.round(gameState.nutrients.vitaminB) + '%';
+                mineralValue.textContent = Math.round(gameState.nutrients.mineral) + '%';
+                
+                // 更新进度条
+                vitaminCBar.style.width = (gameState.nutrients.vitaminC / food.maxNutrients.vitaminC * 100) + '%';
+                proteinBar.style.width = (gameState.nutrients.protein / food.maxNutrients.protein * 100) + '%';
+                vitaminBBar.style.width = (gameState.nutrients.vitaminB / food.maxNutrients.vitaminB * 100) + '%';
+                mineralBar.style.width = (gameState.nutrients.mineral / food.maxNutrients.mineral * 100) + '%';
+            }
+            
+            // 显示结果评价
+            function showResult() {
+                const food = foodData[gameState.currentFood];
+                
+                // 计算平均保留率
+                const total = (
+                    (gameState.nutrients.vitaminC / food.maxNutrients.vitaminC) +
+                    (gameState.nutrients.protein / food.maxNutrients.protein) +
+                    (gameState.nutrients.vitaminB / food.maxNutrients.vitaminB) +
+                    (gameState.nutrients.mineral / food.maxNutrients.mineral)
+                ) / 4 * 100;
+                
+                let grade = '';
+                let gradeText = '';
+                let advice = '';
+                
+                // 根据保留率确定评级和建议
+                if (total >= 80) {
+                    grade = 'A';
+                    gradeText = '优秀';
+                    advice = '营养保留非常完整！这种加工方式对食材营养影响很小，接近新鲜食材的营养价值。';
+                } else if (total >= 60) {
+                    grade = 'B';
+                    gradeText = '良好';
+                    advice = '营养保留较好，可以偶尔食用。建议搭配一些新鲜食材补充流失的营养。';
+                } else if (total >= 40) {
+                    grade = 'C';
+                    gradeText = '一般';
+                    advice = '营养流失较多，长期单一食用可能导致某些营养素缺乏。建议控制食用频率。';
+                } else {
+                    grade = 'D';
+                    gradeText = '较差';
+                    advice = '营养流失严重！这种加工方式破坏了大部分营养成分，不建议经常食用。';
+                }
+                
+                // 更新结果显示
+                resultText.innerHTML = `营养保留率: <strong>${Math.round(total)}%</strong><br><br>${advice}`;
+                resultGrade.textContent = `${grade} (${gradeText})`;
+                
+                // 根据评级设置颜色
+                const gradeColors = {
+                    'A': '#2ecc71',
+                    'B': '#3498db',
+                    'C': '#f39c12',
+                    'D': '#e74c3c'
+                };
+                resultGrade.style.color = gradeColors[grade];
+            }
+            
+            // 创建血滴动画
+            function createBloodDrop(nutrientType, xPos) {
+                const colors = {
+                    vitaminC: '#ff7675',
+                    protein: '#fdcb6e',
+                    vitaminB: '#55efc4',
+                    mineral: '#74b9ff'
+                };
+                
+                const drop = document.createElement('div');
+                drop.className = 'blood-drop';
+                drop.style.backgroundColor = colors[nutrientType];
+                drop.style.left = xPos + 'px';
+                drop.style.top = '10px';
+                
+                animationArea.appendChild(drop);
+                
+                // 随机水平移动
+                const moveX = (Math.random() - 0.5) * 50;
+                
+                // 动画效果
+                const anim = drop.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                    { transform: `translate(${moveX}px, 120px) scale(0.5)`, opacity: 0 }
+                ], {
+                    duration: 1000 + Math.random() * 500,
+                    easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+                });
+                
+                anim.onfinish = () => {
+                    drop.remove();
+                };
+            }
+            
+            // 处理加工步骤
+            function processFood(processType, btnElement) {
+                if (gameState.isProcessing) return;
+                gameState.isProcessing = true;
+                gameState.processesCompleted++;
+                
+                const process = processData[processType];
+                const food = foodData[gameState.currentFood];
+                
+                // 显示处理中的UI状态
+                btnElement.classList.add('active');
+                
+                // 显示知识提示
+                showTooltip(process.tip, btnElement);
+                
+                // 应用营养变化
+                for (const nutrient in process.effects) {
+                    const change = process.effects[nutrient];
+                    const newValue = Math.max(0, gameState.nutrients[nutrient] + change);
+                    const changeAmount = newValue - gameState.nutrients[nutrient];
+                    gameState.nutrients[nutrient] = newValue;
+                    
+                    // 创建血滴动画
+                    if (change < 0) {
+                        const nutrientIndex = ['vitaminC', 'protein', 'vitaminB', 'mineral'].indexOf(nutrient);
+                        const xPos = 50 + nutrientIndex * 80;
+                        const dropCount = Math.min(10, Math.abs(change) * 2);
+                        
+                        for (let i = 0; i < dropCount; i++) {
+                            setTimeout(() => {
+                                createBloodDrop(nutrientType, xPos);
+                            }, i * 100);
+                        }
+                    }
+                }
+                
+                // 震动反馈
+                if (navigator.vibrate) {
+                    navigator.vibrate(200);
+                }
+                
+                // 播放音效 (实际应用中需要添加音效文件)
+                // playSound('drop');
+                
+                // 更新UI
+                updateNutrientDisplay();
+                showResult();
+                
+                // 重置按钮状态
+                setTimeout(() => {
+                    btnElement.classList.remove('active');
+                    gameState.isProcessing = false;
+                }, 1000);
+            }
+            
+            // 显示工具提示
+            function showTooltip(text, element) {
+                tipBubble.textContent = text;
+                tipBubble.style.display = 'block';
+                
+                const rect = element.getBoundingClientRect();
+                tipBubble.style.left = (rect.left + rect.width / 2 - tipBubble.offsetWidth / 2) + 'px';
+                tipBubble.style.top = (rect.top - tipBubble.offsetHeight - 10) + 'px';
+                
+                // 触发动画
+                setTimeout(() => {
+                    tipBubble.style.opacity = '1';
+                    tipBubble.style.transform = 'translateY(0)';
+                }, 10);
+                
+                // 隐藏提示
+                setTimeout(() => {
+                    tipBubble.style.opacity = '0';
+                    tipBubble.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        tipBubble.style.display = 'none';
+                    }, 300);
+                }, 3000);
+            }
+            
+            // 重置游戏
+            function resetGame() {
+                const food = foodData[gameState.currentFood];
+                
+                gameState.nutrients.vitaminC = food.baseNutrients.vitaminC;
+                gameState.nutrients.protein = food.baseNutrients.protein;
+                gameState.nutrients.vitaminB = food.baseNutrients.vitaminB;
+                gameState.nutrients.mineral = food.baseNutrients.mineral;
+                
+                gameState.processesCompleted = 0;
+                gameState.isProcessing = false;
+                
+                // 清除所有处理中的状态
+                processBtns.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // 清除动画区域
+                animationArea.innerHTML = '';
+                
+                updateNutrientDisplay();
+                resultText.textContent = '请选择加工步骤，观察营养成分变化';
+                resultGrade.textContent = '';
+            }
+            
+            // 切换食材类型
+            function changeFoodType() {
+                gameState.currentFood = foodTypeSelect.value;
+                const food = foodData[gameState.currentFood];
+                
+                // 更新图片
+                ingredientImg.src = food.icon;
+                resultImg.src = food.resultIcon;
+                
+                // 重置游戏
+                resetGame();
+            }
+            
+            // 事件监听
+            processBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    processFood(this.dataset.process, this);
+                });
+            });
+            
+            resetBtn.addEventListener('click', resetGame);
+            foodTypeSelect.addEventListener('change', changeFoodType);
+            
+            // 初始化游戏
+            resetGame();
+        });
+    </script>
+</body>
+</html>
